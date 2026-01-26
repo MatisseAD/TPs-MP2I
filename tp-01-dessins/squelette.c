@@ -1,7 +1,7 @@
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define HEIGHT 600
 #define WIDTH 400
@@ -77,7 +77,6 @@ void draw_v_line(int x, int y0, int y1, rgb c) {
 }
 
 void draw_rectangle(int x0, int y0, int x1, int y1, rgb c) {
-
     draw_h_line(y0, x0, x1, c);
     draw_h_line(y1, x0, x1, c);
     draw_v_line(x0, y0, y1, c);
@@ -92,25 +91,31 @@ void fill_rectangle(int x0, int y0, int x1, int y1, rgb c) {
     }
 }
 
-// A REFAIRE
+int distance_squared(int x0, int y0, int x1, int y1) {
 
-void draw_disk(int xc, int yc, int radius, rgb c) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
 
-    draw_v_line(xc, yc, yc + radius, c);
-    draw_v_line(xc, yc - radius, yc, c);
+    return dx*dx + dy*dy;
 
-    draw_h_line(yc, xc, xc + radius, c);
-    draw_h_line(yc, xc - radius, xc, c);
 }
 
-// A REFAIRE
 
 void fill_disk(int xc, int yc, int radius, rgb c) {
 
-    for (int i = radius; i >= 0; i--) {
+    int xmin = xc - radius;
+    int xmax = xc + radius;
+    int ymin = yc - radius;
+    int ymax = yc + radius;
 
-        draw_disk(xc, yc + i, i, c);
+    for (int y = ymin; y <= ymax; y++) {
+        for (int x=xmin; x <= xmax; x++) {
+            if (distance_squared(xc, yc, x, y) <= radius * radius) {
+                put_pixel(x,y,c);
+            }
+        }
     }
+
 }
 
 /***********************/
@@ -156,7 +161,7 @@ void draw_h_gradient(int y, int x0, int x1, rgb c0, rgb c1) {
         }
     } else if (x0 > x1) {
         for (int i = x1; i <= x0; i++) {
-            intepolate(c0, c1, (double) (i - x1) / (x0 - x1), color);
+            intepolate(c0, c1, (double) (i - x1) / (double) (x0 - x1), color);
             put_pixel(i, y, color);
         }
     }
@@ -165,12 +170,55 @@ void draw_h_gradient(int y, int x0, int x1, rgb c0, rgb c1) {
 
 void fill_disk_gradient(int xc, int yc, int radius, rgb c_center, rgb c_edge) {
 
-    
+    rgb color;
+
+    int xmax = xc + radius;
+    int ymax = yc + radius;
+    int ymin = yc - radius;
+    int xmin = xc - radius;
+
+    for (int x=xmin; x <= xmax; x++) {
+        for (int y=ymin; y <= ymax; y++) {
+            double ratio = sqrt(distance_squared(xc, yc, x, y)) / (double) radius;
+            if (ratio <= 1.0) {    
+                intepolate(c_center, c_edge, ratio, color);
+                put_pixel(x,y,color);
+            }
+        }
+    }
+
 }
 
-void get_pixel(int x, int y, rgb result);
-void mix_pixel(int x, int y, double alpha, double beta, rgb c);
-void add_disk(int xc, int yc, int radius, rgb c);
+void get_pixel(int x, int y, rgb result) {
+
+    if (x <= WIDTH && y <= HEIGHT && x >= 0 && y >= 0) {
+        result[0] = canvas[x][y][0];
+        result[1] = canvas[x][y][1];
+        result[2] = canvas[x][y][2];
+    }
+
+}
+
+
+void mix_pixel(int x, int y, double alpha, double beta, rgb c) {
+
+    rgb c_prime;
+    rgb new_c;
+
+    get_pixel(x,y,c_prime);
+
+    mix(c,c_prime,alpha,beta,new_c);
+
+    canvas[x][y][0] = new_c[0];
+    canvas[x][y][1] = new_c[1];
+    canvas[x][y][2] = new_c[2];
+
+}
+
+void add_disk(int xc, int yc, int radius, rgb c) {
+
+
+}
 
 /*******************/
 /* Tracé de lignes */
@@ -196,9 +244,13 @@ void draw_circle(int xc, int yc, int radius, rgb c);
 int main(void) {
     // Full rouge
 
-    draw_h_gradient(100, 100, 400, red, blue);
+
+    fill_rectangle(0, 0, WIDTH, HEIGHT, white);
+
+    fill_disk_gradient(200, 200, 20, red, blue);
 
     print_canvas();
 
     return 0;
 }
+
