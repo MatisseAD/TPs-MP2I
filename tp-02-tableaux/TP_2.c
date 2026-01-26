@@ -222,7 +222,15 @@ Alors, il faut à chaque fois décaler tout les éléments du tableau vers la dr
 Alors, on effectue une boucle qui fait n appels à postion.
 Or dans le pire des cas, il faut à chaque fois parcour les éléments de 0 à k, où k est le k-ième élément à trié. Donc pour postion on aura une complexité quadratique C(n) = thêta(n²). (Boucle while)
 
-Cependant, la fonction insert_sort n'aura pas à décaler les éléments vers la droite car le k-ième élément à trié est le plus grand
+Cependant, la fonction insert_sort n'aura pas à décaler les éléments vers la droite car le k-ième élément à trié est le plus grand.
+
+Ainsi, la complexité de insert_at dans le pire des cas est C(n) = thêta(n²) (Boucle for)
+
+Dans le meilleur des cas, le tableau est déjà trié.
+Alors, il faut à chaque fois insérer l'élément à la fin du tableau.
+Donc, on effectue une boucle qui fait n appels à postion.
+Or dans le meilleur des cas, il faut à chaque fois faire un seul test dans postion.
+Donc la complexité de postion dans le meilleur des cas est C(n) = thêta(n) (Boucle for)
 
 
 */
