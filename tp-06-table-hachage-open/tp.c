@@ -51,7 +51,7 @@ set *set_example(void) {
     set *ans = malloc(sizeof(set));
     ans->p = 2;
     ans->nb_empty = 1;
-    ans->a = malloc(sizeof(bucket));
+    ans->a = malloc(sizeof(bucket) * 4);
 
     ans->a[0].statuts = occupied;
     ans->a[0].element = 1492;
@@ -101,7 +101,6 @@ bool set_is_member(set *s, T x) {
 }
 
 T set_get(set *s, uint64_t i) {
-    assert(s->a[i].element != NULL);
 
     return s->a[i].element;
 }
@@ -152,7 +151,7 @@ int main(void) {
 
     set *try = set_example();
 
-    bool ans = set_is_member(try, 2);
+    bool ans = set_is_member(try, 1492);
 
     return 0;
 }
