@@ -2,10 +2,6 @@ type ('a, 'b) arbre = F of 'b | N of 'a * ('a, 'b) arbre * ('a, 'b) arbre
 
 let t1 = N (12, N (4, N (7, F 20, F 30), N (14, F 1, F 2)), F 20)
 
-(* ========================================================================== *)
-(* MOTEUR DE RENDU 2D : ARBRE CLASSIQUE (HAUT EN BAS)                         *)
-(* ========================================================================== *)
-
 let print_arbre (show_n : 'a -> string) (show_f : 'b -> string)
     (tree : ('a, 'b) arbre) : unit =
   (* Fonction utilitaire pour compléter une chaîne avec des espaces *)
@@ -124,3 +120,49 @@ let rec affiche_postfixe (h : (int, int) arbre) : unit =
       affiche_prefixe d;
       print_int x;
       print_newline ()
+
+type ('a, 'b) token = Ft of 'b | Nt of 'a
+
+let rec postfixe_naif (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  match a with
+  | F x -> [ Ft x ]
+  | N (x, g, d) -> postfixe_naif g @ postfixe_naif d @ [ Nt x ]
+
+(** Cette fonction va être inefficace au vu du cout de la complexité de "@"*)
+
+let postfixe (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  let rec aux (a : ('a, 'b) arbre) (b : ('a, 'b) token list) :
+      ('a, 'b) token list =
+    match a with
+    | F x -> Ft x :: b
+    | N (x, g, d) ->
+        let b1 = aux g b in
+        let b2 = aux d b1 in
+        Nt x :: b2
+  in
+  let ans = aux a [] in
+  List.rev ans
+
+let prefixe (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  let rec aux (a : ('a, 'b) arbre) (b : ('a, 'b) token list) :
+      ('a, 'b) token list =
+    match a with
+    | F x -> Ft x :: b
+    | N (x, g, d) ->
+        let b1 = aux g (Nt x :: b) in
+        let b2 = aux d b1 in
+        b2
+  in
+  List.rev (aux a [])
+
+let infixe (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  let rec aux (a : ('a, 'b) arbre) (b : ('a, 'b) token list) :
+      ('a, 'b) token list =
+    match a with
+    | F x -> Ft x :: b
+    | N (x, g, d) ->
+        let b1 = aux g b in
+        let b2 = aux d (Nt x :: b1) in
+        b2
+  in
+  List.rev (aux a [])
