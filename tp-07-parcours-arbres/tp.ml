@@ -166,3 +166,86 @@ let infixe (a : ('a, 'b) arbre) : ('a, 'b) token list =
         b2
   in
   List.rev (aux a [])
+
+let postfixe_term (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  let rec aux (a : ('a, 'b) arbre list) (l : ('a, 'b) token list) :
+      ('a, 'b) token list =
+    match a with
+    | [] -> l
+    | x :: xs -> (
+        match x with
+        | F b -> aux xs (Ft b :: l)
+        | N (b, g, d) -> aux (d :: g :: xs) (Nt b :: l))
+  in
+  aux [ a ] []
+
+let largeur (a : ('a, 'b) arbre) : ('a, 'b) token list =
+  let q = Queue.create () in
+  let rec aux a =
+    match a with
+    | [] -> ()
+    | t :: ts -> (
+        match t with
+        | F x ->
+            Queue.push (Ft x) q;
+            aux ts
+        | N (x, g, d) ->
+            Queue.push (Nt x) q;
+            aux (g :: d :: ts))
+  in
+  aux [ a ];
+  let rec aux2 l =
+    if Queue.is_empty q then l
+    else
+      let element = Queue.pop q in
+      aux2 (element :: l)
+  in
+  List.rev (aux2 [])
+
+let rec lire_etiquette (c : bool list) (t : ('a, 'b) arbre) : ('a, 'b) token =
+  match c with
+  | x :: xs -> (
+      if x then
+        match t with
+        | F b -> failwith "Impossible"
+        | N (a, g, d) -> lire_etiquette xs d
+      else
+        match t with
+        | F b -> failwith "Impossible"
+        | N (a, g, d) -> lire_etiquette xs g)
+  | [] -> ( match t with F x -> Ft x | N (x, g, d) -> Nt x)
+
+let rec incremente (t : (int, int) arbre) (c : bool list) : (int, int) arbre =
+  match (t, c) with
+  | N (x, g, d), [] -> N (x + 1, g, d)
+  | F x, [] -> F (x + 1)
+  | N (x, g, d), b :: bs ->
+      if b then begin
+        N (x, g, incremente d bs)
+      end
+      else N (x, incremente g bs, d)
+  | F _, _ -> failwith "Impossible"
+
+let affiche (x : int) (c : bool list) : unit =
+  List.iter (fun b -> print_int (if b then 1 else 0)) c;
+  Printf.printf " : %i\n" x
+
+let rec tableau_adresses (t : (int, int) arbre) : unit =
+  let rec aux (t : (int, int) arbre) (bl : bool list) =
+    match t with
+    | F x -> affiche x (List.rev bl)
+    | N (x, g, d) ->
+        affiche x (List.rev bl);
+        aux g (false :: bl);
+        aux d (true :: bl)
+  in
+  aux t []
+
+let lire_postfixe (tk : ('a, 'b) token list) : ('a, 'b) arbre =
+  let rec aux (tk : ('a, 'b) token list)  =
+    match tk with
+    | [] -> F 0
+    | x :: xs ->
+      match x with
+      | Ft b -> F b
+      | Nt a -> N (a, aux )
