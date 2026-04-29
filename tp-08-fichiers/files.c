@@ -221,7 +221,7 @@ int main(void) {
     while (true) {
         if (fscanf(f, "%s", c) != 1) break;
 
-        if (anagrammes(c, "la")) {
+        if (anagrammes(c, "ethan")) {
             printf(c);
             printf(" | ");
         }
